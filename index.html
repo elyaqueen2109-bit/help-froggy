@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🐸 Froggy's Fashion Pond — Have/Has Got</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a3a2a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Sans MS', 'Neucha', cursive, sans-serif;
+            padding: 15px;
+        }
+        .game-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 750px;
+        }
+        .game-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3 / 2;
+            background: #4db8d1;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .pond-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+        /* Lily pad */
+        .lilypad {
+            position: absolute;
+            width: 15%;
+            aspect-ratio: 1/1;
+            cursor: pointer;
+            transition: transform 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        .lilypad:hover { transform: scale(1.08); }
+        .lilypad.active-pad {
+            animation: padGlow 0.8s ease infinite;
+            cursor: pointer;
+        }
+        .lilypad.done { cursor: default; }
+        .lilypad.locked {
+            filter: brightness(0.65);
+            cursor: not-allowed;
+        }
+        @keyframes padGlow {
+            0%,100% { filter: brightness(1.15) drop-shadow(0 0 10px #ffe066); }
+            50% { filter: brightness(1.35) drop-shadow(0 0 18px #ff6b8a); }
+        }
+        .lilypad .friend {
+            position: absolute;
+            width: 75%;
+            height: 75%;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .lilypad .pad-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .crown-final {
+            position: absolute;
+            width: 65%;
+            height: 65%;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 3;
+            animation: crownGlow 1.2s ease infinite;
+        }
+        @keyframes crownGlow {
+            0%,100% { filter: brightness(1) drop-shadow(0 0 8px gold); }
+            50% { filter: brightness(1.6) drop-shadow(0 0 18px gold); }
+        }
+        .froggy {
+            position: absolute;
+            width: 13%;
+            aspect-ratio: 1/1;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10;
+        }
+        .froggy.falling {
+            transition: all 0.6s ease-in;
+            opacity: 0;
+            transform: scale(0.5) rotate(180deg);
+        }
+        .splash-effect {
+            position: absolute;
+            width: 13%;
+            aspect-ratio: 1/1;
+            pointer-events: none;
+            animation: splashAnim 0.8s ease forwards;
+            z-index: 20;
+        }
+        @keyframes splashAnim {
+            0% { transform: scale(0.3); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        /* Modal — pond style */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: linear-gradient(180deg, #e8fdf5 0%, #c8f0e8 40%, #a8ddd0 100%);
+            border-radius: 28px;
+            padding: 22px 18px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            border: 3px solid #2ecc71;
+            position: relative;
+            overflow: hidden;
+        }
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: -10px; left: -10px;
+            width: 50px; height: 50px;
+            background: radial-gradient(circle, rgba(46,204,113,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .modal-content::after {
+            content: '';
+            position: absolute;
+            bottom: -8px; right: -8px;
+            width: 40px; height: 40px;
+            background: radial-gradient(circle, rgba(255,107,138,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .modal h2 { font-size: clamp(20px, 3.5vw, 26px); margin-bottom: 8px; color: #1a5c3a; }
+        .modal .friend-img { width: 80px; height: 80px; object-fit: contain; margin: 8px auto; }
+        .modal .question { font-size: clamp(16px, 2.2vw, 20px); margin: 8px 0; color: #1a5c3a; line-height: 1.4; }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 13px;
+            margin: 7px 0;
+            border-radius: 30px;
+            font-size: clamp(16px, 2.2vw, 20px);
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-family: inherit;
+            transition: 0.2s;
+            position: relative;
+            z-index: 1;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-have { background: linear-gradient(135deg, #4ecdc4, #2ecc71); }
+        .btn-has { background: linear-gradient(135deg, #ff6b8a, #e74c3c); }
+        .btn-restart { background: linear-gradient(135deg, #a29bfe, #6c5ce7); color: white; margin-top: 12px; }
+        .btn-tryagain { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; margin-top: 12px; }
+        .btn-start { background: linear-gradient(135deg, #ff6b8a, #ff8e53); color: white; font-size: clamp(18px, 2.5vw, 22px); }
+        .stars { font-size: 26px; margin: 8px 0; }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <div class="game-container" id="gameContainer">
+        <img class="pond-bg" src="pond.png" alt="Pond" onerror="this.src='pond.jpg'">
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+    <div class="modal-content" id="modalContent"></div>
+</div>
+
+<!-- AUDIO -->
+<audio id="pondAmbient" preload="auto" loop src="pond-ambient.mp3"></audio>
+<audio id="ribbit" preload="auto" src="ribbit.mp3"></audio>
+<audio id="splashSound" preload="auto" src="splash.mp3"></audio>
+<audio id="fanfare" preload="auto" src="fanfare.mp3"></audio>
+
+<script>
+    // ====== GAME DATA ======
+    const levels = [
+        { id: 'snellie',  friend: 'snellie.png',  friendAlt: 'snellie.jpg',  question: 'Snellie ___ got a red scarf.',   correct: 'has', emoji: '🧣' },
+        { id: 'dottie',  friend: 'dottie.png',  friendAlt: 'dottie.jpg',  question: 'Dottie ___ got a blue hat.',     correct: 'has', emoji: '🧢' },
+        { id: 'flutter', friend: 'flutter.png', friendAlt: 'flutter.jpg', question: 'Flutter ___ got a yellow dress.', correct: 'has', emoji: '👗' },
+        { id: 'bubbles', friend: 'bubbles.png', friendAlt: 'bubbles.jpg', question: 'Bubbles ___ got green glasses.', correct: 'has', emoji: '👓' },
+        { id: 'wiggles', friend: 'wiggles.png', friendAlt: 'wiggles.jpg', question: 'Wiggles ___ got purple socks.', correct: 'has', emoji: '🧦' },
+        { id: 'buzzy',   friend: 'buzzy.png',   friendAlt: 'buzzy.jpg',   question: 'Buzzy ___ got an orange sweater.', correct: 'has', emoji: '🧶' }
+    ];
+
+    let currentLevel = 0;
+    let gameOver = false;
+
+    const padPositions = [
+        { top: 22, left: 10 },  // Snellie
+        { top: 58, left: 20 },  // Dottie
+        { top: 18, left: 36 },  // Flutter
+        { top: 55, left: 50 },  // Bubbles
+        { top: 22, left: 64 },  // Wiggles
+        { top: 58, left: 78 }   // Buzzy → CROWN
+    ];
+
+    const container = document.getElementById('gameContainer');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+
+    // ====== AMBIENT SOUND ======
+    function startAmbient() {
+        const ambient = document.getElementById('pondAmbient');
+        if (ambient) {
+            ambient.volume = 0.25;
+            ambient.play().catch(() => {});
+        }
+    }
+
+    // ====== BUILD GAME ======
+    function buildGame() {
+        container.querySelectorAll('.lilypad, .froggy, .splash-effect, .crown-final').forEach(el => el.remove());
+
+        // Lily pads
+        padPositions.forEach((pos, i) => {
+            const pad = document.createElement('div');
+            pad.className = 'lilypad';
+            pad.style.top = pos.top + '%';
+            pad.style.left = pos.left + '%';
+            pad.dataset.index = i;
+            pad.addEventListener('click', () => onPadClick(i, pad));
+
+            const padBg = document.createElement('img');
+            padBg.className = 'pad-bg';
+            padBg.src = 'lilypad.png';
+            padBg.onerror = () => { padBg.src = 'lilypad.jpg'; };
+            pad.appendChild(padBg);
+
+            const friend = document.createElement('img');
+            friend.className = 'friend';
+            friend.src = levels[i].friend;
+            friend.onerror = () => { friend.src = levels[i].friendAlt; };
+            pad.appendChild(friend);
+
+            if (i === padPositions.length - 1) {
+                const crown = document.createElement('img');
+                crown.className = 'crown-final';
+                crown.src = 'crown.png';
+                crown.onerror = () => { crown.src = 'crown.jpg'; };
+                pad.appendChild(crown);
+            }
+
+            if (i > currentLevel) pad.classList.add('locked');
+            if (i === currentLevel) pad.classList.add('active-pad');
+            if (i < currentLevel) pad.classList.add('done');
+
+            container.appendChild(pad);
+        });
+
+        // Froggy
+        const froggy = document.createElement('img');
+        froggy.className = 'froggy';
+        froggy.src = 'froggy.png';
+        froggy.onerror = () => { froggy.src = 'froggy.jpg'; };
+        froggy.id = 'froggy';
+        if (currentLevel === 0) {
+            froggy.style.top = '30%';
+            froggy.style.left = '2%';
+        } else {
+            const prev = padPositions[currentLevel - 1];
+            froggy.style.top = (prev.top + 3) + '%';
+            froggy.style.left = (prev.left + 3) + '%';
+        }
+        container.appendChild(froggy);
+    }
+
+    // ====== PAD CLICK ======
+    function onPadClick(index, pad) {
+        if (gameOver) return;
+        if (pad.classList.contains('locked') || pad.classList.contains('done')) return;
+        if (index !== currentLevel) return;
+        showQuestion(index);
+    }
+
+    function showQuestion(index) {
+        const level = levels[index];
+        modalContent.innerHTML = `
+            <img class="friend-img" src="${level.friend}" alt="Friend" onerror="this.src='${level.friendAlt}'">
+            <h2>${level.question}</h2>
+            <div class="question">Choose the right word: ${level.emoji}</div>
+            <button class="btn btn-have" onclick="checkAnswer('have', ${index})">🟢 HAVE GOT</button>
+            <button class="btn btn-has" onclick="checkAnswer('has', ${index})">🔴 HAS GOT</button>
+        `;
+        modal.classList.add('active');
+    }
+
+    function checkAnswer(choice, index) {
+        const level = levels[index];
+        modal.classList.remove('active');
+
+        const allPads = container.querySelectorAll('.lilypad');
+        const pad = allPads[index];
+
+        if (choice === level.correct) {
+            playSound('ribbit');
+            currentLevel++;
+
+            const froggy = document.getElementById('froggy');
+            froggy.classList.remove('falling');
+            froggy.style.opacity = '1';
+            froggy.style.transform = '';
+            const target = padPositions[index];
+            froggy.style.top = (target.top + 3) + '%';
+            froggy.style.left = (target.left + 3) + '%';
+
+            pad.classList.remove('active-pad');
+            pad.classList.add('done');
+
+            if (currentLevel < levels.length) {
+                allPads[currentLevel].classList.remove('locked');
+                allPads[currentLevel].classList.add('active-pad');
+            }
+
+            if (currentLevel >= levels.length) {
+                gameOver = true;
+                setTimeout(() => showWin(), 700);
+            }
+
+        } else {
+            playSound('splashSound');
+            gameOver = true;
+
+            const froggy = document.getElementById('froggy');
+            froggy.classList.add('falling');
+            froggy.style.top = (parseFloat(pad.style.top) + 10) + '%';
+            froggy.style.left = (parseFloat(pad.style.left) + 2) + '%';
+
+            showSplash(pad);
+
+            setTimeout(() => {
+                modalContent.innerHTML = `
+                    <h2>💦 Oh no! Froggy fell!</h2>
+                    <div class="question">Correct answer: <b>${level.correct.toUpperCase()} GOT</b></div>
+                    <p style="color:#1a5c3a;">Don't worry, let's try again! 🐸</p>
+                    <button class="btn btn-tryagain" onclick="restartGame()">🔄 PLAY AGAIN</button>
+                `;
+                modal.classList.add('active');
+            }, 800);
+        }
+    }
+
+    function showSplash(pad) {
+        const splash = document.createElement('img');
+        splash.className = 'splash-effect';
+        splash.src = 'splash.png';
+        splash.onerror = () => { splash.src = 'splash.jpg'; };
+        const rect = pad.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        splash.style.top = (rect.top - containerRect.top + rect.height/2 - 20) + 'px';
+        splash.style.left = (rect.left - containerRect.left + rect.width/2 - 20) + 'px';
+        container.appendChild(splash);
+        setTimeout(() => splash.remove(), 800);
+    }
+
+    function showWin() {
+        playSound('fanfare');
+        modalContent.innerHTML = `
+            <img src="froggy-crown.png" alt="Froggy with crown" style="width:100px;height:100px;object-fit:contain;" onerror="this.src='crown.png'">
+            <h2>🎉 HOORAY! 🎉</h2>
+            <div class="stars">⭐⭐⭐⭐⭐</div>
+            <p style="font-size:18px;color:#1a5c3a;">Froggy got the crown!</p>
+            <p style="font-size:16px;color:#2c5a3a;">You know <b>have got</b> and <b>has got</b>! 🐸👑</p>
+            <button class="btn btn-restart" onclick="restartGame()">🔄 PLAY AGAIN</button>
+        `;
+        modal.classList.add('active');
+    }
+
+    // ====== SOUNDS ======
+    function playSound(id) {
+        const audio = document.getElementById(id);
+        if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
+    }
+
+    function restartGame() {
+        currentLevel = 0;
+        gameOver = false;
+        modal.classList.remove('active');
+        buildGame();
+    }
+
+    // ====== INTRO ======
+    function showIntro() {
+        modalContent.innerHTML = `
+            <img src="froggy.png" alt="Froggy" style="width:80px;height:80px;object-fit:contain;" onerror="this.src='froggy.jpg'">
+            <h2>🐸 Froggy's Fashion Pond</h2>
+            <div class="question">
+                Froggy wants to get the crown!<br>
+                Help her visit all her friends<br>
+                and choose <b>HAVE GOT</b> or <b>HAS GOT</b>!
+            </div>
+            <p style="font-size:14px;color:#1a5c3a;">👑 Get to the last lily pad and win the crown!</p>
+            <button class="btn btn-start" onclick="startGame()">🐸 LET'S GO!</button>
+        `;
+        modal.classList.add('active');
+    }
+
+    function startGame() {
+        modal.classList.remove('active');
+        startAmbient();
+        buildGame();
+    }
+
+    // ====== INIT ======
+    showIntro();
+</script>
+</body>
+</html>
