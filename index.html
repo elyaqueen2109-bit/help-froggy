@@ -18,7 +18,7 @@
         .game-wrapper {
             position: relative;
             width: 100%;
-            max-width: 750px;
+            max-width: 800px;
         }
         .game-container {
             position: relative;
@@ -34,11 +34,133 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             object-fit: cover;
+            z-index: 1;
         }
+        /* Water shimmers */
+        .water-shimmer {
+            position: absolute;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0%,100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.4); }
+        }
+        /* Collection panel */
+        .collection-panel {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 14px;
+            padding: 6px 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-width: 50%;
+            z-index: 15;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            justify-content: flex-end;
+        }
+        .collection-panel .item-slot {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #e8e8e8;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #aaa;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .collection-panel .item-slot.collected {
+            border: 2px solid #ff6b8a;
+            background: #fff5f5;
+        }
+        .collection-panel .item-slot.just-collected {
+            animation: slotPop 0.5s ease;
+            border: 3px solid gold;
+            background: #fffde8;
+        }
+        @keyframes slotPop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+        .collection-panel .item-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        /* Flying item animation */
+        .flying-item {
+            position: absolute;
+            z-index: 30;
+            pointer-events: none;
+            animation: flyToPanel 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        @keyframes flyToPanel {
+            0% { 
+                transform: scale(0.5); 
+                opacity: 1; 
+                top: var(--start-top); 
+                left: var(--start-left); 
+            }
+            30% { 
+                transform: scale(2.5); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: scale(0.8); 
+                opacity: 0.8; 
+                top: var(--end-top); 
+                left: var(--end-left); 
+            }
+        }
+        /* Speech bubble */
+        .speech-bubble {
+            position: absolute;
+            background: white;
+            border-radius: 16px;
+            padding: 8px 12px;
+            font-size: clamp(11px, 1.6vw, 14px);
+            color: #2c3e50;
+            z-index: 20;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            max-width: 28%;
+            text-align: center;
+            transition: opacity 0.3s;
+        }
+        .speech-bubble.arrow-top::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 20px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
+        }
+        .speech-bubble.arrow-bottom::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 20px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+        .speech-bubble.hidden { opacity: 0; pointer-events: none; }
         /* Lily pad */
         .lilypad {
             position: absolute;
-            width: 15%;
+            width: 11%;
             aspect-ratio: 1/1;
             cursor: pointer;
             transition: transform 0.15s;
@@ -54,7 +176,7 @@
         }
         .lilypad.done { cursor: default; }
         .lilypad.locked {
-            filter: brightness(0.65);
+            filter: brightness(0.6);
             cursor: not-allowed;
         }
         @keyframes padGlow {
@@ -79,8 +201,8 @@
         }
         .crown-final {
             position: absolute;
-            width: 65%;
-            height: 65%;
+            width: 55%;
+            height: 55%;
             object-fit: contain;
             pointer-events: none;
             z-index: 3;
@@ -92,7 +214,7 @@
         }
         .froggy {
             position: absolute;
-            width: 13%;
+            width: 10%;
             aspect-ratio: 1/1;
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 10;
@@ -104,7 +226,7 @@
         }
         .splash-effect {
             position: absolute;
-            width: 13%;
+            width: 10%;
             aspect-ratio: 1/1;
             pointer-events: none;
             animation: splashAnim 0.8s ease forwards;
@@ -114,7 +236,28 @@
             0% { transform: scale(0.3); opacity: 1; }
             100% { transform: scale(2); opacity: 0; }
         }
-        /* Modal — pond style */
+        /* Confetti */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+        .confetti-piece {
+            position: absolute;
+            top: -50px;
+            font-size: 28px;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+        }
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -130,13 +273,17 @@
             background: linear-gradient(180deg, #e8fdf5 0%, #c8f0e8 40%, #a8ddd0 100%);
             border-radius: 28px;
             padding: 22px 18px;
-            max-width: 400px;
+            max-width: 420px;
             width: 90%;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
             border: 3px solid #2ecc71;
             position: relative;
             overflow: hidden;
+        }
+        .modal-content.win {
+            border-color: gold;
+            background: linear-gradient(180deg, #fffde8 0%, #fff9c4 40%, #ffe082 100%);
         }
         .modal-content::before {
             content: '';
@@ -156,6 +303,7 @@
         }
         .modal h2 { font-size: clamp(20px, 3.5vw, 26px); margin-bottom: 8px; color: #1a5c3a; }
         .modal .friend-img { width: 80px; height: 80px; object-fit: contain; margin: 8px auto; }
+        .modal .win-img { width: 200px; height: auto; object-fit: contain; margin: 8px auto; border-radius: 16px; }
         .modal .question { font-size: clamp(16px, 2.2vw, 20px); margin: 8px 0; color: #1a5c3a; line-height: 1.4; }
         .btn {
             display: block;
@@ -198,30 +346,39 @@
 <!-- AUDIO -->
 <audio id="pondAmbient" preload="auto" loop src="pond-ambient.mp3"></audio>
 <audio id="ribbit" preload="auto" src="ribbit.mp3"></audio>
+<audio id="collect" preload="auto" src="collect.mp3"></audio>
 <audio id="splashSound" preload="auto" src="splash.mp3"></audio>
 <audio id="fanfare" preload="auto" src="fanfare.mp3"></audio>
 
 <script>
     // ====== GAME DATA ======
     const levels = [
-        { id: 'snellie',  friend: 'snellie.png',  friendAlt: 'snellie.jpg',  question: 'Snellie ___ got a red scarf.',   correct: 'has', emoji: '🧣' },
-        { id: 'dottie',  friend: 'dottie.png',  friendAlt: 'dottie.jpg',  question: 'Dottie ___ got a blue hat.',     correct: 'has', emoji: '🧢' },
-        { id: 'flutter', friend: 'flutter.png', friendAlt: 'flutter.jpg', question: 'Flutter ___ got a yellow dress.', correct: 'has', emoji: '👗' },
-        { id: 'bubbles', friend: 'bubbles.png', friendAlt: 'bubbles.jpg', question: 'Bubbles ___ got green glasses.', correct: 'has', emoji: '👓' },
-        { id: 'wiggles', friend: 'wiggles.png', friendAlt: 'wiggles.jpg', question: 'Wiggles ___ got purple socks.', correct: 'has', emoji: '🧦' },
-        { id: 'buzzy',   friend: 'buzzy.png',   friendAlt: 'buzzy.jpg',   question: 'Buzzy ___ got an orange sweater.', correct: 'has', emoji: '🧶' }
+        { id: 'froggy-solo', friend: 'froggy.png', friendAlt: 'froggy.jpg', question: 'I ___ got a pink bow tie.', correct: 'have', emoji: '🎀', itemName: 'a pink bow tie',  icon: 'icon-bow.png', speaker: 'I' },
+        { id: 'snellie',  friend: 'snellie.png',  friendAlt: 'snellie.jpg',  question: 'Snellie ___ got a red scarf.',   correct: 'has', emoji: '🧣', itemName: 'a red scarf',    icon: 'icon-scarf.png', speaker: 'Snellie' },
+        { id: 'dottie',  friend: 'dottie.png',  friendAlt: 'dottie.jpg',  question: 'Dottie ___ got a blue hat.',     correct: 'has', emoji: '🧢', itemName: 'a blue hat',     icon: 'icon-hat.png', speaker: 'Dottie' },
+        { id: 'flutter', friend: 'flutter.png', friendAlt: 'flutter.jpg', question: 'Flutter ___ got a yellow dress.', correct: 'has', emoji: '👗', itemName: 'a yellow dress',  icon: 'icon-dress.png', speaker: 'Flutter' },
+        { id: 'bubbles', friend: 'bubbles.png', friendAlt: 'bubbles.jpg', question: 'Bubbles ___ got green glasses.', correct: 'has', emoji: '👓', itemName: 'green glasses',   icon: 'icon-glasses.png', speaker: 'Bubbles' },
+        { id: 'wiggles', friend: 'wiggles.png', friendAlt: 'wiggles.jpg', question: 'Wiggles ___ got purple socks.', correct: 'has', emoji: '🧦', itemName: 'purple socks',    icon: 'icon-socks.png', speaker: 'Wiggles' },
+        { id: 'ducky',   friend: 'ducky-chick.png', friendAlt: 'ducky-chick.jpg', question: 'Ducky and Chick ___ got red shoes.', correct: 'have', emoji: '👞', itemName: 'red shoes', icon: 'icon-shoes.png', speaker: 'Ducky and Chick' },
+        { id: 'buzzy',   friend: 'buzzy.png',   friendAlt: 'buzzy.jpg',   question: 'Buzzy ___ got an orange sweater.', correct: 'has', emoji: '🧶', itemName: 'an orange sweater', icon: 'icon-sweater.png', speaker: 'Buzzy' },
+        { id: 'foxy',    friend: 'foxy-rabbit.png', friendAlt: 'foxy-rabbit.jpg', question: 'Foxy and Rabbit ___ got blue skirts.', correct: 'have', emoji: '👗', itemName: 'blue skirts', icon: 'icon-skirt.png', speaker: 'Foxy and Rabbit' }
     ];
 
     let currentLevel = 0;
     let gameOver = false;
+    let collectedItems = [true]; // Бантик уже есть у Фрогги
 
     const padPositions = [
-        { top: 22, left: 10 },  // Snellie
-        { top: 58, left: 20 },  // Dottie
-        { top: 18, left: 36 },  // Flutter
-        { top: 55, left: 50 },  // Bubbles
-        { top: 22, left: 64 },  // Wiggles
-        { top: 58, left: 78 }   // Buzzy → CROWN
+        { top: 18, left: 6 },   // 1 I (Froggy)
+        { top: 55, left: 12 },  // 2 Snellie
+        { top: 14, left: 22 },  // 3 Dottie
+        { top: 50, left: 30 },  // 4 Flutter
+        { top: 20, left: 40 },  // 5 Bubbles
+        { top: 55, left: 48 },  // 6 Wiggles
+        { top: 17, left: 58 },  // 7 Ducky & Chick
+        { top: 50, left: 66 },  // 8 Buzzy
+        { top: 22, left: 76 },  // 9 Foxy & Rabbit
+        { top: 56, left: 87 }   // 10 CROWN
     ];
 
     const container = document.getElementById('gameContainer');
@@ -237,11 +394,144 @@
         }
     }
 
+    // ====== WATER SHIMMERS ======
+    function addWaterShimmers() {
+        container.querySelectorAll('.water-shimmer').forEach(el => el.remove());
+        
+        const shimmerData = [
+            { top: '5%', left: '12%', size: '40px', delay: '0s' },
+            { top: '15%', left: '35%', size: '55px', delay: '1s' },
+            { top: '8%', left: '60%', size: '35px', delay: '0.5s' },
+            { top: '25%', left: '80%', size: '50px', delay: '1.5s' },
+            { top: '40%', left: '8%', size: '45px', delay: '2s' },
+            { top: '50%', left: '42%', size: '60px', delay: '0.8s' },
+            { top: '35%', left: '70%', size: '38px', delay: '1.2s' },
+            { top: '65%', left: '18%', size: '42px', delay: '0.3s' },
+            { top: '70%', left: '55%', size: '48px', delay: '1.8s' },
+            { top: '60%', left: '85%', size: '36px', delay: '0.7s' },
+            { top: '80%', left: '30%', size: '44px', delay: '1.4s' },
+            { top: '85%', left: '72%', size: '40px', delay: '2.2s' }
+        ];
+
+        shimmerData.forEach(data => {
+            const shimmer = document.createElement('div');
+            shimmer.className = 'water-shimmer';
+            shimmer.style.top = data.top;
+            shimmer.style.left = data.left;
+            shimmer.style.width = data.size;
+            shimmer.style.height = data.size;
+            shimmer.style.animationDelay = data.delay;
+            container.appendChild(shimmer);
+        });
+    }
+
+    // ====== COLLECTION PANEL ======
+    function buildCollectionPanel() {
+        const oldPanel = container.querySelector('.collection-panel');
+        if (oldPanel) oldPanel.remove();
+
+        const panel = document.createElement('div');
+        panel.className = 'collection-panel';
+
+        levels.forEach((level, i) => {
+            const slot = document.createElement('div');
+            slot.className = 'item-slot';
+            slot.id = 'item-slot-' + i;
+            if (collectedItems[i]) {
+                slot.classList.add('collected');
+                const img = document.createElement('img');
+                img.src = level.icon;
+                img.alt = level.itemName;
+                slot.appendChild(img);
+            } else {
+                slot.textContent = '?';
+            }
+            panel.appendChild(slot);
+        });
+
+        container.appendChild(panel);
+    }
+
+    function addItemToCollection(index) {
+        collectedItems[index] = true;
+        const slot = document.getElementById('item-slot-' + index);
+        if (slot) {
+            slot.classList.add('collected');
+            slot.textContent = '';
+            const img = document.createElement('img');
+            img.src = levels[index].icon;
+            img.alt = levels[index].itemName;
+            slot.appendChild(img);
+            
+            // Анимация "собрано!"
+            slot.classList.add('just-collected');
+            setTimeout(() => slot.classList.remove('just-collected'), 500);
+        }
+    }
+
+    // ====== FLYING ITEM ANIMATION ======
+    function animateItemFly(index) {
+        const level = levels[index];
+        const slot = document.getElementById('item-slot-' + index);
+        if (!slot) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const slotRect = slot.getBoundingClientRect();
+
+        // Старт — центр экрана
+        const startTop = containerRect.height / 2 - 40;
+        const startLeft = containerRect.width / 2 - 40;
+        // Финиш — позиция слота
+        const endTop = slotRect.top - containerRect.top;
+        const endLeft = slotRect.left - containerRect.left;
+
+        const flyItem = document.createElement('img');
+        flyItem.className = 'flying-item';
+        flyItem.src = level.icon;
+        flyItem.style.width = '80px';
+        flyItem.style.height = '80px';
+        flyItem.style.setProperty('--start-top', startTop + 'px');
+        flyItem.style.setProperty('--start-left', startLeft + 'px');
+        flyItem.style.setProperty('--end-top', endTop + 'px');
+        flyItem.style.setProperty('--end-left', endLeft + 'px');
+        flyItem.style.top = startTop + 'px';
+        flyItem.style.left = startLeft + 'px';
+
+        container.appendChild(flyItem);
+
+        // Удаляем после анимации и добавляем в слот
+        setTimeout(() => {
+            flyItem.remove();
+            addItemToCollection(index);
+        }, 700);
+    }
+
+    // ====== SPEECH BUBBLE ======
+    function showSpeechBubble(text, top, left, arrowDir) {
+        const oldBubble = container.querySelector('.speech-bubble');
+        if (oldBubble) oldBubble.remove();
+
+        const bubble = document.createElement('div');
+        bubble.className = 'speech-bubble';
+        bubble.classList.add(arrowDir === 'up' ? 'arrow-bottom' : 'arrow-top');
+        bubble.style.top = top + '%';
+        bubble.style.left = left + '%';
+        bubble.textContent = text;
+        container.appendChild(bubble);
+    }
+
+    function hideSpeechBubble() {
+        const bubble = container.querySelector('.speech-bubble');
+        if (bubble) bubble.classList.add('hidden');
+    }
+
     // ====== BUILD GAME ======
     function buildGame() {
         container.querySelectorAll('.lilypad, .froggy, .splash-effect, .crown-final').forEach(el => el.remove());
 
-        // Lily pads
+        addWaterShimmers();
+        buildCollectionPanel();
+
         padPositions.forEach((pos, i) => {
             const pad = document.createElement('div');
             pad.className = 'lilypad';
@@ -256,11 +546,13 @@
             padBg.onerror = () => { padBg.src = 'lilypad.jpg'; };
             pad.appendChild(padBg);
 
-            const friend = document.createElement('img');
-            friend.className = 'friend';
-            friend.src = levels[i].friend;
-            friend.onerror = () => { friend.src = levels[i].friendAlt; };
-            pad.appendChild(friend);
+            if (i < levels.length) {
+                const friend = document.createElement('img');
+                friend.className = 'friend';
+                friend.src = levels[i].friend;
+                friend.onerror = () => { friend.src = levels[i].friendAlt; };
+                pad.appendChild(friend);
+            }
 
             if (i === padPositions.length - 1) {
                 const crown = document.createElement('img');
@@ -284,12 +576,12 @@
         froggy.onerror = () => { froggy.src = 'froggy.jpg'; };
         froggy.id = 'froggy';
         if (currentLevel === 0) {
-            froggy.style.top = '30%';
-            froggy.style.left = '2%';
+            froggy.style.top = '26%';
+            froggy.style.left = '1%';
         } else {
             const prev = padPositions[currentLevel - 1];
-            froggy.style.top = (prev.top + 3) + '%';
-            froggy.style.left = (prev.left + 3) + '%';
+            froggy.style.top = (prev.top + 1) + '%';
+            froggy.style.left = (prev.left + 2) + '%';
         }
         container.appendChild(froggy);
     }
@@ -299,6 +591,12 @@
         if (gameOver) return;
         if (pad.classList.contains('locked') || pad.classList.contains('done')) return;
         if (index !== currentLevel) return;
+        
+        if (index === padPositions.length - 1) {
+            winGame();
+            return;
+        }
+        
         showQuestion(index);
     }
 
@@ -323,6 +621,10 @@
 
         if (choice === level.correct) {
             playSound('ribbit');
+            
+            // Запускаем анимацию перелёта иконки
+            animateItemFly(index);
+            
             currentLevel++;
 
             const froggy = document.getElementById('froggy');
@@ -330,25 +632,46 @@
             froggy.style.opacity = '1';
             froggy.style.transform = '';
             const target = padPositions[index];
-            froggy.style.top = (target.top + 3) + '%';
-            froggy.style.left = (target.left + 3) + '%';
+            froggy.style.top = (target.top + 1) + '%';
+            froggy.style.left = (target.left + 2) + '%';
+
+            hideSpeechBubble();
+            
+            let bubbleText;
+            if (level.speaker === 'I') {
+                bubbleText = `Yay! I have got ${level.itemName}! ${level.emoji}`;
+            } else if (level.correct === 'have') {
+                bubbleText = `Yay! ${level.speaker} have got ${level.itemName}! ${level.emoji}`;
+            } else {
+                bubbleText = `Yay! ${level.speaker} has got ${level.itemName}! ${level.emoji}`;
+            }
+            
+            showSpeechBubble(bubbleText, target.top - 12, target.left, 'down');
 
             pad.classList.remove('active-pad');
             pad.classList.add('done');
 
-            if (currentLevel < levels.length) {
+            if (currentLevel < padPositions.length - 1) {
                 allPads[currentLevel].classList.remove('locked');
                 allPads[currentLevel].classList.add('active-pad');
             }
 
-            if (currentLevel >= levels.length) {
-                gameOver = true;
-                setTimeout(() => showWin(), 700);
+            if (currentLevel === padPositions.length - 1) {
+                setTimeout(() => {
+                    const froggy = document.getElementById('froggy');
+                    const crownPos = padPositions[padPositions.length - 1];
+                    froggy.style.top = (crownPos.top + 1) + '%';
+                    froggy.style.left = (crownPos.left + 2) + '%';
+                    hideSpeechBubble();
+                    showSpeechBubble("I have got the crown! I'm the star of Fashion Day! 👑", crownPos.top - 12, crownPos.left, 'down');
+                }, 400);
+                setTimeout(() => winGame(), 1600);
             }
 
         } else {
             playSound('splashSound');
             gameOver = true;
+            hideSpeechBubble();
 
             const froggy = document.getElementById('froggy');
             froggy.classList.add('falling');
@@ -382,16 +705,49 @@
         setTimeout(() => splash.remove(), 800);
     }
 
-    function showWin() {
+    function launchConfetti() {
+        const confettiContainer = document.createElement('div');
+        confettiContainer.className = 'confetti-container';
+        document.body.appendChild(confettiContainer);
+
+        const emojis = ['❤️', '💛', '💚', '💙', '💜', '⭐', '✨', '🎉', '💖', '🌟', '👑', '🎀', '🧣', '🧢', '👗', '👓', '🧦', '👞', '🧶'];
+
+        for (let i = 0; i < 60; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            piece.style.left = Math.random() * 100 + '%';
+            piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            piece.style.animationDelay = Math.random() * 1.5 + 's';
+            confettiContainer.appendChild(piece);
+        }
+
+        setTimeout(() => confettiContainer.remove(), 4000);
+    }
+
+    function winGame() {
+        gameOver = true;
         playSound('fanfare');
+        launchConfetti();
+        hideSpeechBubble();
+
+        const allPads = container.querySelectorAll('.lilypad');
+        allPads.forEach(p => {
+            p.classList.remove('active-pad', 'locked');
+            p.classList.add('done');
+        });
+
         modalContent.innerHTML = `
-            <img src="froggy-crown.png" alt="Froggy with crown" style="width:100px;height:100px;object-fit:contain;" onerror="this.src='crown.png'">
-            <h2>🎉 HOORAY! 🎉</h2>
+            <img class="win-img" src="froggy-runway.png" alt="Froggy on runway" onerror="this.src='froggy-crown.png'">
+            <h2 style="color:#b8860b;">🎉 HOORAY! 🎉</h2>
             <div class="stars">⭐⭐⭐⭐⭐</div>
-            <p style="font-size:18px;color:#1a5c3a;">Froggy got the crown!</p>
-            <p style="font-size:16px;color:#2c5a3a;">You know <b>have got</b> and <b>has got</b>! 🐸👑</p>
+            <p style="font-size:20px;color:#b8860b;font-weight:700;">Froggy is the STAR of Fashion Day!</p>
+            <p style="font-size:16px;color:#5d6d7e;">She collected all the outfits and won the crown! 🐸👑</p>
+            <p style="font-size:14px;color:#2c5a3a;">You know <b>have got</b> and <b>has got</b>!</p>
             <button class="btn btn-restart" onclick="restartGame()">🔄 PLAY AGAIN</button>
         `;
+        const mc = document.querySelector('.modal-content');
+        if (mc) mc.classList.add('win');
         modal.classList.add('active');
     }
 
@@ -404,8 +760,13 @@
     function restartGame() {
         currentLevel = 0;
         gameOver = false;
+        collectedItems = [true]; // Бантик уже есть
         modal.classList.remove('active');
+        const mc = document.querySelector('.modal-content');
+        if (mc) mc.classList.remove('win');
+        hideSpeechBubble();
         buildGame();
+        showSpeechBubble("Hi! I'm Froggy! 🐸 I have got ONLY a pink bow tie... Help me collect more clothes for Fashion Day!", 36, 1, 'up');
     }
 
     // ====== INTRO ======
@@ -414,11 +775,12 @@
             <img src="froggy.png" alt="Froggy" style="width:80px;height:80px;object-fit:contain;" onerror="this.src='froggy.jpg'">
             <h2>🐸 Froggy's Fashion Pond</h2>
             <div class="question">
-                Froggy wants to get the crown!<br>
-                Help her visit all her friends<br>
-                and choose <b>HAVE GOT</b> or <b>HAS GOT</b>!
+                Froggy is going to <b>Fashion Day</b>!<br>
+                But she only has a pink bow tie...<br>
+                Help her visit friends, collect outfits,<br>
+                and become the <b>STAR</b> of the show!
             </div>
-            <p style="font-size:14px;color:#1a5c3a;">👑 Get to the last lily pad and win the crown!</p>
+            <p style="font-size:14px;color:#1a5c3a;">Choose <b>HAVE GOT</b> or <b>HAS GOT</b> 👑</p>
             <button class="btn btn-start" onclick="startGame()">🐸 LET'S GO!</button>
         `;
         modal.classList.add('active');
@@ -428,6 +790,7 @@
         modal.classList.remove('active');
         startAmbient();
         buildGame();
+        showSpeechBubble("Hi! I'm Froggy! 🐸 I have got ONLY a pink bow tie... Help me collect more clothes for Fashion Day!", 36, 1, 'up');
     }
 
     // ====== INIT ======
